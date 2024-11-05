@@ -1,0 +1,272 @@
+body {
+  font-family: sans-serif, Arial;
+  color: #3f2860;
+  background-color: #eff4f7;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+header {
+  color: #000000;
+  background-color: #e4d8c5;
+  text-align: center;
+  height: 100px;
+}
+
+footer {
+  background-color: #a59c96;
+  font-size: 0.9em;
+  text-align: center;
+  color: #000000;
+  padding: 16px;
+  margin-top: 32px;
+}
+
+footer a {
+  color: #000000;
+}
+
+footer a:hover {
+  color: #ffff;
+}
+
+button {
+  background-color: #b8195a;
+  color: #fff;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-weight: 700px;
+  font-size: 16px;
+  border-color: #b8195a;
+  border-spacing: 2px;
+  border-style: solid;
+  text-transform: uppercase;
+  border-radius: 10px;
+  cursor: pointer;
+  display: block;
+}
+
+.services {
+  float: left;
+  width: 47%;
+  height: 400px;
+  background: white;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  padding-left: 11px;
+  padding-right: 11px;
+  margin-top: 30px;
+  margin-right: auto;
+  margin-bottom: 20px;
+  margin-left: 15px;
+  border-radius: 20px;
+  box-sizing: border-box;
+}
+
+.services img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  height: 40%;
+}
+
+main {
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 20%;
+  margin-right: 20%;
+  padding: 16px;
+  border-radius: 20px;
+  border-color: #a6a0ba;
+  border-spacing: 2px;
+  border-style: solid;
+}
+
+section {
+  margin-top: 10px;
+  height: auto;
+  width: auto;
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  background: #e4d8c5;
+  overflow: hidden;
+}
+
+header h1 {
+  padding-top: 16px;
+  line-height: 200%;
+}
+
+nav ul {
+  list-style-type: none;
+  text-align: center;
+  padding: 8px;
+  height: 100px;
+}
+
+nav ul li {
+  display: inline-block;
+  padding: 25px;
+}
+
+nav ul li a {
+  text-decoration: none;
+  padding: 5px;
+  color: #003366;
+}
+
+header i {
+  display: none;
+}
+
+nav ul li a:hover {
+  color: white;
+  background-color: #7f869a;
+}
+
+#menu {
+  display: none;
+}
+
+.bluep {
+  color: dodgerblue;
+}
+
+#mypara {
+  color: dodgerblue;
+}
+
+form {
+  display:flexbox;
+}
+
+input {
+  display: block;
+  width: 95%;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-left: 5px;
+  margin-right: 5px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: dodgerblue;
+}
+
+#submit {
+  background-color: #b8195a;
+  color: #fff;
+  margin-top: 2%;
+  margin-bottom: 2%;
+  margin-left: 40%;
+  margin-right: 40%;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-right: 10px;
+  padding-left: 10px;
+  font-weight: 700px;
+  font-size: 16px;
+  border-width: 2px;
+  border-style: solid;
+  border-color: #b8195a;
+  min-width: 150px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+label {
+  display: block;
+  width: 100%;
+  margin: 1%;
+}
+
+textarea {
+  display: block;
+  width: 95%;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-left: 5px;
+  margin-right: 5px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: dodgerblue;
+}
+
+fieldset {
+  display:flex;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 2%;
+  margin-right: 2%;
+  width: 100%;
+  border-width: 3px;
+  border-style: solid;
+  border-color: #7f869a;
+  border-radius: 5px;
+}
+
+legend {
+  padding: 5px;
+  font-size: medium;
+  word-spacing: 4px;
+}
+
+@media only screen and (max-width: 768px) {
+  header {
+    height: 100px;
+  }
+  header h1 {
+    display: inline-block;
+    line-height: 50%;
+  }
+  #wrapper {
+    position: relative;
+  }
+  main {
+    margin-top: 60px;
+  }
+  nav {
+    position: absolute;
+    right: 10px;
+    top: 20px;
+  }
+
+  #menu {
+    float: right;
+    display: block;
+    background-color: #7f869a;
+    padding: 2%;
+    opacity: 0.5;
+  }
+
+  .services {
+    width: 92%;
+    background-color: white;
+    padding: 24px 11px;
+    margin: auto auto 20px 15px;
+    border-radius: 20px;
+    box-sizing: border-box;
+  }
+
+  nav ul li {
+    display: block;
+    width: 70%;
+    padding: 10px;
+    font-size: small;
+  }
+
+  nav ul {
+    height: 0px;
+    overflow: hidden;
+  }
+
+  .showNav {
+    height: 300px;
+  }
+}
