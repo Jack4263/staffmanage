@@ -90,6 +90,40 @@ def _initDB():
 
     con.commit()
 
+def _getCompanyID(companyName:str) -> int:
+    con = sql.connect("RotaPlus.db")
+    cur = con.cursor()
+
+    cur.execute(f"""
+                SELECT CompanyID FROM Company
+                WHERE CompanyName = '{companyName}'
+                """)
+    
+    return cur.fetchone()[0]
+
+def _getBranchID(branchName:str) -> int:
+    con = sql.connect("RotaPlus.db")
+    cur = con.cursor()
+
+    cur.execute(f"""
+                SELECT BranchID FROM Branch
+                WHERE BranchName = '{branchName}'
+                """)
+    
+    return cur.fetchone()[0]
+    
+def _getUserID(username:str) -> str:
+    con = sql.connect("RotaPlus.db")
+    cur = con.cursor()
+
+    cur.execute(f"""
+                SELECT UserID FROM User
+                WHERE Username = '{username}'
+                """)
+    
+    return cur.fetchone()[0]
+
+
 def setUser(username:str,firstName:str,surname:str,password:str) -> bool:
     """
     Will return True if insert was successful, otherwise False
@@ -174,18 +208,55 @@ def setBranch(companyName:str,branchName:str,branchCode:str) -> bool:
         return True
     return False  
 
+def addBranchEmployee(branchName:str,branchCode:str,employeeUsername:str) -> bool: 
+    """
+    Method will add a user as an employee at an existing branch\n
+    Will return True if insert was successful, otherwise False
+    - Username should be valid
+    - Branch should be valid
+    - Branch code should match the branch code within the database
+    - User shouldn't be an existing employee
+    """
 
-def _getCompanyID(companyName:str) -> int:
     con = sql.connect("RotaPlus.db")
     cur = con.cursor()
 
     cur.execute(f"""
-                SELECT CompanyID FROM Company
-                WHERE CompanyName = '{companyName}'
+                SELECT EXISTS(
+                SELECT * FROM User
+                WHERE Username = '{employeeUsername}')
+               """)
+    userExists = cur.fetchone()[0]
+
+    cur.execute(f"""
+                SELECT EXISTS(
+                SELECT * FROM Branch
+                WHERE BranchName = '{branchName}')
                 """)
-    
-    return cur.fetchone()[0]
+    branchExists = cur.fetchone()[0]
+
+    cur.execute(f"""
+                SELECT BranchCode FROM Branch
+                WHERE BranchName = '{branchName}'
+                """)
+    validCode = branchCode == cur.fetchone()[0]
+
+    cur.execute(f"""
+                SELECT EXISTS(
+                SELECT * FROM BranchEmployee
+                WHERE BranchID = {_getBranchID(branchName)}
+                AND UserID = {_getUserID(employeeUsername)})
+                """)
+    employed = cur.fetchone()[0]
+
+    if userExists and branchExists and validCode and not employed:
+        cur.execute(f"""
+                    INSERT INTO BranchEmployee(BranchID,UserID)
+                    VALUES({_getBranchID(branchName)},{_getUserID(employeeUsername)})
+                    """)
+        con.commit()
+        return True
+    return False
 
 if __name__ == "__main__":
     _initDB() #CREATE DATABASE IF NOT EXISTS
-    print(setBranch("JTProgramming","Frontend","JTPF101124"))
