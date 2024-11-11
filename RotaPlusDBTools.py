@@ -123,6 +123,36 @@ def _getUserID(username:str) -> str:
     
     return cur.fetchone()[0]
 
+def _companyExists(companyName:str) -> bool:
+
+    "Returns 1 or 0 if exists or not"
+
+    con = sql.connect("RotaPlus.db")
+    cur = con.cursor()
+
+    cur.execute(f"""
+                SELECT EXISTS(
+                SELECT * FROM Company 
+                WHERE CompanyName='{companyName}')
+                """)
+    return cur.fetchone()[0]
+
+def _branchExists(companyName:str,branchName:str) -> bool:
+
+    "Returns 1 or 0 if exists or not"
+
+    con = sql.connect("RotaPlus.db")
+    cur = con.cursor()
+
+    cur.execute(f"""
+                SELECT EXISTS(
+                SELECT BranchName FROM Branch, Company
+                WHERE Branch.CompanyID = Company.CompanyID
+                AND CompanyName = '{companyName}'
+                AND BranchName = '{branchName}')
+                """)
+    return cur.fetchone()[0]
+
 
 def setUser(username:str,firstName:str,surname:str,password:str) -> bool:
     """
@@ -154,8 +184,7 @@ def setCompany(companyName:str) -> bool:
     con = sql.connect("RotaPlus.db")
     cur = con.cursor()
     
-    cur.execute(f"SELECT EXISTS(SELECT * FROM Company WHERE CompanyName='{companyName}')")
-    exists = cur.fetchone()[0]
+    exists = _companyExists(companyName)
     if not exists:
         cur.execute(f"""
                     INSERT INTO Company(CompanyName)
@@ -176,21 +205,8 @@ def setBranch(companyName:str,branchName:str,branchCode:str) -> bool:
     con = sql.connect("RotaPlus.db")
     cur = con.cursor()
 
-    cur.execute(f"""
-                SELECT EXISTS(
-                SELECT * FROM Company 
-                WHERE CompanyName='{companyName}')
-                """)
-    companyExists = cur.fetchone()[0]
-
-    cur.execute(f"""
-                SELECT EXISTS(
-                SELECT BranchName FROM Branch, Company
-                WHERE Branch.CompanyID = Company.CompanyID
-                AND CompanyName = '{companyName}'
-                AND BranchName = '{branchName}')
-                """)
-    branchExists = cur.fetchone()[0]
+    companyExists = _companyExists(companyName)
+    branchExists = _branchExists(companyName,branchName)
 
     cur.execute(f"""
                 SELECT EXISTS(
@@ -208,7 +224,7 @@ def setBranch(companyName:str,branchName:str,branchCode:str) -> bool:
         return True
     return False  
 
-def addBranchEmployee(branchName:str,branchCode:str,employeeUsername:str) -> bool: 
+def addBranchEmployee(companyName:str,branchName:str,branchCode:str,employeeUsername:str) -> bool: 
     """
     Method will add a user as an employee at an existing branch\n
     Will return True if insert was successful, otherwise False
@@ -228,12 +244,7 @@ def addBranchEmployee(branchName:str,branchCode:str,employeeUsername:str) -> boo
                """)
     userExists = cur.fetchone()[0]
 
-    cur.execute(f"""
-                SELECT EXISTS(
-                SELECT * FROM Branch
-                WHERE BranchName = '{branchName}')
-                """)
-    branchExists = cur.fetchone()[0]
+    branchExists = _branchExists(companyName,branchName)
 
     cur.execute(f"""
                 SELECT BranchCode FROM Branch
@@ -257,6 +268,16 @@ def addBranchEmployee(branchName:str,branchCode:str,employeeUsername:str) -> boo
         con.commit()
         return True
     return False
+
+def addRole(companyName:str, roleName:str) -> bool: #UNTESTED
+    """
+    Will add a role to a company\n
+    Will return True if insert was successful, otherwise False
+    - Role should be unique to a company
+    - CompanyName should be valid
+    """
+
+
 
 if __name__ == "__main__":
     _initDB() #CREATE DATABASE IF NOT EXISTS
