@@ -1,5 +1,7 @@
 import sqlite3 as sql
 
+#MAIN
+
 def _initDB():
 
     con = sql.connect("RotaPlus.db")
@@ -90,6 +92,8 @@ def _initDB():
 
     con.commit()
 
+#PRIVATE GETTERS
+
 def _getCompanyID(companyName:str) -> int:
     con = sql.connect("RotaPlus.db")
     cur = con.cursor()
@@ -123,6 +127,8 @@ def _getUserID(username:str) -> str:
     
     return cur.fetchone()[0]
 
+#PRIVATE EXISTS
+
 def _companyExists(companyName:str) -> bool:
 
     "Returns 1 or 0 if exists or not"
@@ -153,6 +159,7 @@ def _branchExists(companyName:str,branchName:str) -> bool:
                 """)
     return cur.fetchone()[0]
 
+#PUBLIC SETTERS
 
 def setUser(username:str,firstName:str,surname:str,password:str) -> bool:
     """
@@ -277,6 +284,29 @@ def addRole(companyName:str, roleName:str) -> bool: #UNTESTED
     - CompanyName should be valid
     """
 
+    con = sql.connect("RotaPlus.db")
+    cur = con.cursor()
+
+    companyExists = _companyExists(companyName)
+
+    if companyExists:
+        cur.execute(f"""
+                    SELECT EXISTS(
+                    SELECT * FROM Role
+                    WHERE RoleName = '{roleName}'
+                    AND CompanyID = {_getCompanyID(companyName)})
+                    """)
+        roleExists = cur.fetchone()[0]
+    
+    if not roleExists:
+        cur.execute(f"""
+                    INSERT INTO Role(ComanyID,RoleName)
+                    VALUES({_getCompanyID(companyName)},'{roleName}')
+                    """)
+        return True
+    return False
+
+   
 
 
 if __name__ == "__main__":
