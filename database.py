@@ -98,48 +98,54 @@ class _libary():
     #PRIVATE GETTERS
 
     def _getCompanyID(self,companyName:str) -> int:
-        
-        self._cur.execute(f"""
-                    SELECT CompanyID FROM Company
-                    WHERE CompanyName = '{companyName}'
-                    """)
-        
-        return self._cur.fetchone()[0]
+        try:
+            self._cur.execute(f"""
+                        SELECT CompanyID FROM Company
+                        WHERE CompanyName = '{companyName}'
+                        """)
+            
+            return self._cur.fetchone()[0]
+        except: return False
 
     def _getBranchID(self,branchName:str=None,branchCode:str=None) -> int:
         """
         branchName : str -> Returns BranchID from Branch Name\n
         branchCode : str -> Returns BranchID from Branch Code
         """
-        if branchName:
-            self._cur.execute(f"""
-                        SELECT BranchID FROM Branch
-                        WHERE BranchName = '{branchName}'
-                            """)
-            return self._cur.fetchone()[0]
-        
-        elif branchCode:
-            self._cur.execute(f"""
-                              SELECT BranchID FROM Brahcn
-                              WHERE BranchCode = '{branchCode}'
-                              """)
-            return self._cur.fetchone()[0]
-        
-    def _getUserID(self,username:str) -> str:
+        try:
+            if branchName:
+                self._cur.execute(f"""
+                            SELECT BranchID FROM Branch
+                            WHERE BranchName = '{branchName}'
+                                """)
+                return self._cur.fetchone()[0]
+            
+            elif branchCode:
+                self._cur.execute(f"""
+                                SELECT BranchID FROM Branch
+                                WHERE BranchCode = '{branchCode}'
+                                """)
+                return self._cur.fetchone()[0]
+        except: return None
 
-        self._cur.execute(f"""
-                    SELECT UserID FROM User
-                    WHERE Username = '{username}'
-                    """)
-        
-        return self._cur.fetchone()[0]
+    def _getUserID(self,username:str) -> str:
+        try:
+            self._cur.execute(f"""
+                        SELECT UserID FROM User
+                        WHERE Username = '{username}'
+                        """)
+            
+            return self._cur.fetchone()[0]
+        except: return None
 
     def _getRoleID(self,roleName:str) -> str: #UNTESTED
-        self._cur.execute(f"""
-                          SELECT RoleID FROM Role
-                          WHERE RoleName = '{roleName}'
-                          """)
-        return self._cur.fetchone()[0]
+        try:
+            self._cur.execute(f"""
+                            SELECT RoleID FROM Role
+                            WHERE RoleName = '{roleName}'
+                            """)
+            return self._cur.fetchone()[0]
+        except: return None
 
     #PUBLIC EXISTS
 
@@ -258,7 +264,7 @@ class _libary():
 
     #PUBLIC ADDERS
 
-    def addBranchEmployee(self,branchCode:str,employeeUsername:str) -> bool: #UNTESTED
+    def addBranchEmployee(self,branchCode:str,employeeUsername:str) -> bool: 
         """
         Method will add a user as an employee at an existing branch\n
         Will return True if insert was successful, otherwise False
@@ -274,12 +280,16 @@ class _libary():
                 """)
         userExists = self._cur.fetchone()[0]
 
+        if not userExists: return False
+
         self._cur.execute(f"""
                           SELECT EXISTS(
                           SELECT * FROM Branch
                           WHERE BranchCode = '{branchCode}')
                           """)
         validBranchCode = self._cur.fetchone()[0]
+
+        if not validBranchCode: return False
 
         self._cur.execute(f"""
                           SELECT EXISTS(
@@ -291,7 +301,7 @@ class _libary():
                           """)
         employed = self._cur.fetchone()[0]
 
-        if userExists and validBranchCode and not employed:
+        if not employed:
             self._cur.execute(f"""
                         INSERT INTO BranchEmployee(BranchID,UserID)
                         VALUES({self._getBranchID(branchCode=branchCode)},{self._getUserID(employeeUsername)})
@@ -300,7 +310,7 @@ class _libary():
             return True
         return False
 
-    def addRole(self,companyName:str, roleName:str) -> bool: #UNTESTED
+    def addRole(self,companyName:str, roleName:str) -> bool: 
         """
         Will add a role to a company\n
         Will return True if insert was successful, otherwise False
@@ -318,19 +328,19 @@ class _libary():
                         AND CompanyID = {self._getCompanyID(companyName)})
                         """)
             roleExists = self._cur.fetchone()[0]
-        
-        if not roleExists:
-            self._cur.execute(f"""
-                        INSERT INTO Role(ComanyID,RoleName)
-                        VALUES(
-                              {self._getCompanyID(companyName)},
-                              '{roleName}')
-                        """)
-            self._con.commit()
-            return True
+
+            if not roleExists:
+                self._cur.execute(f"""
+                            INSERT INTO Role(CompanyID,RoleName)
+                            VALUES(
+                                {self._getCompanyID(companyName)},
+                                '{roleName}')
+                            """)
+                self._con.commit()
+                return True
         return False
 
-    def addCompanyManager(self,companyName:str,username:str) -> bool: #UNTESTED
+    def addCompanyManager(self,companyName:str,username:str) -> bool: 
         """
         Adds a user to the CompanyManager table\n
         Will return True if insert was successful, otherwise False
@@ -338,19 +348,20 @@ class _libary():
         - Username should be valid
         - Username should be unique to a company
         """
-
+        employed = True
         companyExists = self.companyExists(companyName)
         userExists = self.userExists(username)
 
-        self._cur.execute(f"""
-                          SELECT EXECUTE(
-                          SELECT * FROM CompanyManager
-                          WHERE CompanyID = {self._getCompanyID(companyName)}
-                          AND UserID = {self._getUserID(username)})
-                          """)
-        employed = self._cur.fetchone()[0]
+        if companyExists and userExists:
+            self._cur.execute(f"""
+                            SELECT EXISTS(
+                            SELECT * FROM CompanyManager
+                            WHERE CompanyID = {self._getCompanyID(companyName)}
+                            AND UserID = {self._getUserID(username)})
+                            """)
+            employed = self._cur.fetchone()[0]
 
-        if companyExists and userExists and not employed:
+        if not employed:
             self._cur.execute(f"""
                               INSERT INTO CompanyManager(CompanyID,UserID)
                               VALUES(
@@ -361,7 +372,7 @@ class _libary():
             return True
         return False
 
-    def addBranchManager(self,companyName:str,branchName:str,username:str) -> bool: #UNTESTED
+    def addBranchManager(self,companyName:str,branchName:str,username:str) -> bool: 
         """
         Adds a user to the BranchManager table\n
         Will return True if insert was successful, otherwise False
@@ -370,20 +381,21 @@ class _libary():
         - Username should be unique to a branch
         - Branch Name should be unique to a company
         """
-
+        employed = True
         companyExists = self.companyExists(companyName)
         userExists = self.userExists(username)
         branchExists = self.branchExists(companyName,branchName)
 
-        self._cur.execute(f"""
-                          SELECT EXECUTE(
-                          SELECT * FROM BranchManager
-                          WHERE CompanyID = {self._getCompanyID(companyName)}
-                          AND UserID = {self._getUserID(username)})
-                          """)
-        employed = self._cur.fetchone()[0]
+        if companyExists and userExists and branchExists:
+            self._cur.execute(f"""
+                            SELECT EXISTS(
+                            SELECT * FROM BranchManager
+                            WHERE BranchID = {self._getBranchID(branchName=branchName)}
+                            AND UserID = {self._getUserID(username)})
+                            """)
+            employed = self._cur.fetchone()[0]
 
-        if companyExists and userExists and branchExists and not employed:
+        if not employed:
             self._cur.execute(f"""
                               INSERT INTO BranchManager(BranchID,UserID)
                               VALUES(
@@ -394,7 +406,7 @@ class _libary():
             return True
         return False
 
-    def addUserRole(self,username:str,roleName:str,companyName:str) -> bool: #UNTESTED
+    def addUserRole(self,username:str,roleName:str,companyName:str) -> bool: 
         """
         Assigns a role to a user in the UserRole table\n
         Will return True if insert was successful, otherwise False
@@ -404,28 +416,34 @@ class _libary():
         - User shouldn't already be employed under role
         """
         companyExists = self.companyExists(companyName)
+        userExists = self.userExists(username)
+
+        if not companyExists or not userExists: return False
+
+        try:
+            self._cur.execute(f"""
+                            SELECT EXISTS(
+                            SELECT * FROM Role
+                            WHERE RoleID = {self._getRoleID(roleName)}
+                            AND CompanyID = {self._getCompanyID(companyName)})
+                            """)
+            roleExists = self._cur.fetchone()[0]
+        except: return False
 
         self._cur.execute(f"""
-                          SELECT * FROM Role
-                          WHERE RoleID = {self._getRoleID(roleName)}
-                          AND CompanyID = {self._getCompanyID(companyName)}
-                          """)
-        roleExists = self._cur.fetchone()[0]
-
-        self._cur.execute(f"""
-                          SELECT EXISTS(
-                          SELECT * FROM BranchEmployee, Branch
-                          WHERE BranchEmployee.BranchID = Branch.BranchID
-                          AND Branch.CompanyID = {self._getCompanyID(companyName)}
-                          AND BranchEmployee.UserID = {self._getUserID(username)})
-                          """)
+                        SELECT EXISTS(
+                        SELECT * FROM BranchEmployee, Branch
+                        WHERE BranchEmployee.BranchID = Branch.BranchID
+                        AND Branch.CompanyID = {self._getCompanyID(companyName)}
+                        AND BranchEmployee.UserID = {self._getUserID(username)})
+                        """)
         userExists = self._cur.fetchone()[0]
 
         self._cur.execute(f"""
                           SELECT EXISTS(
                           SELECT * FROM UserRole
                           WHERE UserID = {self._getUserID(username)}
-                          AND CompanyID = {self._getCompanyID(companyName)})
+                          AND RoleID = {self._getRoleID(roleName)})
                           """)
         userRoleExists =self._cur.fetchone()[0]
 
@@ -440,7 +458,7 @@ class _libary():
             return True
         return False
 
-    def addUserHoliday(self,username:str,startDate:str,endDate:str) -> bool: #UNTESTED
+    def addUserHoliday(self,username:str,startDate:str,endDate:str) -> bool: 
         """
         Will add a users holiday to the UserHoliday Table\n
         Will return True if insert was successful, otherwise False
@@ -450,7 +468,10 @@ class _libary():
         """
         #ISO8601 Format required for date comparasons
 
+        holidayClash = True
         userExists = self.userExists(username)
+
+        if endDate < startDate: return False
 
         if [len(txt) for txt in startDate.split('-')] == [4,2,2] and [len(txt) for txt in endDate.split('-')] == [4,2,2]: #Checks dates are in ISO8601 Format
             self._cur.execute(f"""
@@ -460,6 +481,7 @@ class _libary():
                             OR EndDate BETWEEN '{startDate}' AND '{endDate}')
                             """)
             holidayClash = self._cur.fetchone()[0]
+        else: return False
         
         if userExists and not holidayClash:
             self._cur.execute(f"""
