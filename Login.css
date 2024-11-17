@@ -55,3 +55,6 @@ body {
 .container form .btn:hover {
   opacity: 0.7;
 }
+.noaccount {
+  text-align: center;
+}
