@@ -10,6 +10,3 @@ def home():
 @app.route('/Signup')
 def classes():
     return render_template("signupform.html")
-
-
-dbTools._userExists()
