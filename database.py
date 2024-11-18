@@ -7,7 +7,7 @@ class _libary():
         - Sets connection and cursor
         """
 
-        self._con = sql.connect("RotaPlus.db")
+        self._con = sql.connect("staffManage.db")
         self._cur = self._con.cursor()
 
         self._cur.execute("""
@@ -91,6 +91,16 @@ class _libary():
                     EndTime TEXT,
                     FOREIGN KEY(BranchID) REFERENCES Branch(BranchID),
                     FOREIGN KEY(RoleID) REFERENCES Role(RoleID));
+                    """)
+
+        self._cur.execute("""
+                    CREATE TABLE IF NOT EXISTS UserRoleHours(
+                    UserID INTEGER,
+                    RoleID INTEGER,
+                    Day TEXT PRIMARY KEY,
+                    StartTime TEXT,
+                    EndTime TEXT,
+                    FOREIGN KEY(UserID) REFERENCES User(UserID));
                     """)
 
         self._con.commit()
@@ -261,6 +271,9 @@ class _libary():
             self._con.commit()
             return True
         return False  
+
+    def setUserRoleHours(self,companyName:str,roleName:str,userName:str,day:str,startTime:str,endTime:str) -> bool: #UNTESTED
+        pass
 
     #PUBLIC ADDERS
 
