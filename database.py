@@ -7,6 +7,8 @@ class _libary():
         - Sets connection and cursor
         """
 
+        self._days = {"monday","tuesday","wednesday","thursday","friday","saturday","sunday"}
+
         self._con = sql.connect("staffManage.db")
         self._cur = self._con.cursor()
 
@@ -100,11 +102,17 @@ class _libary():
                     Day TEXT PRIMARY KEY,
                     StartTime TEXT,
                     EndTime TEXT,
-                    FOREIGN KEY(UserID) REFERENCES User(UserID));
+                    FOREIGN KEY(UserID) REFERENCES User(UserID)
+                    FOREIGN KEY(RoleID) REFERENCES Role(RoleID));
                     """)
 
         self._con.commit()
 
+    def _validTime(self,time:str) -> bool:
+        if len(time) != 5: return False
+        if int(time[:2]) > 23 or int(time[3:]) > 59 or time[2] != ':': return False
+        return True
+    
     #PRIVATE GETTERS
 
     def _getCompanyID(self,companyName:str) -> int:
@@ -148,11 +156,12 @@ class _libary():
             return self._cur.fetchone()[0]
         except: return None
 
-    def _getRoleID(self,roleName:str) -> str: #UNTESTED
+    def _getRoleID(self,roleName:str,companyName:str) -> str: 
         try:
             self._cur.execute(f"""
                             SELECT RoleID FROM Role
                             WHERE RoleName = '{roleName}'
+                            AND CompanyID = {self._getCompanyID(companyName)}
                             """)
             return self._cur.fetchone()[0]
         except: return None
@@ -193,6 +202,20 @@ class _libary():
                     WHERE Username='{username}')
                     """)
         return self._cur.fetchone()[0]
+
+    def roleExists(self,roleName:str, companyName:str) -> bool:
+
+        "Returns 1 or 0 if exists or not"
+
+        self._cur.execute(f"""
+            SELECT EXISTS(
+            SELECT * FROM Role
+            WHERE RoleName = '{roleName}'
+            AND CompanyID = {self._getCompanyID(companyName)})
+            """)
+        return self._cur.fetchone()[0]
+
+
 
     #PUBLIC SETTERS
     
@@ -273,7 +296,56 @@ class _libary():
         return False  
 
     def setUserRoleHours(self,companyName:str,roleName:str,userName:str,day:str,startTime:str,endTime:str) -> bool: #UNTESTED
-        pass
+        """
+        Will add a new day and time to UserRoleHours. If day already exists for a user then it will be updated\n
+        Will return True if insert was successful, otherwise False
+        - Company Name should be valid
+        - Username should be valid
+        - Role Name should be valid
+        - Day should be valid
+        - Start Time should be < End Time
+        - Time should be in the form HH:MM using 24 hours
+        """
+        companyExists = self.companyExists(companyName)
+        userExists = self.userExists(userName)
+        roleExists = self.roleExists(roleName,companyName)
+        if not companyExists or not userExists or not roleExists: return False
+
+        if endTime < startTime: return False
+        dayValid = day.lower() in self._days
+        startTimeValid = self._validTime(startTime)
+        endTimeValid = self._validTime(endTime)
+        if not dayValid or not startTimeValid or not endTimeValid: return False
+
+        roleID = self._getRoleID(roleName,companyName)
+        userID = self._getUserID(userName)
+
+        self._cur.execute(f"""
+                          SELECT EXISTS(
+                          SELECT * FROM UserRoleHours
+                          WHERE Day = '{day}'
+                          AND UserID = {userID}
+                          AND RoleID = {roleID})
+                          """)
+        dayExists = self._cur.fetchone()[0]
+
+        if dayExists:
+            self._cur.execute(f"""
+                              UPDATE UserRoleHours
+                              SET StartTime = '{startTime}',
+                              EndTime = '{endTime}'
+                              WHERE Day = '{day}'
+                              AND UserID = {userID}
+                              AND RoleID = {roleID}
+                              """)
+
+        else:
+            self._cur.execute(f"""
+                              INSERT INTO UserRoleHours(UserID,RoleID,Day,StartTime,EndTime)
+                              VALUES({userID},{roleID},'{day}','{startTime}','{endTime}')
+                              """)
+        self._con.commit()
+        return True
 
     #PUBLIC ADDERS
 
@@ -334,13 +406,7 @@ class _libary():
         companyExists = self.companyExists(companyName)
 
         if companyExists:
-            self._cur.execute(f"""
-                        SELECT EXISTS(
-                        SELECT * FROM Role
-                        WHERE RoleName = '{roleName}'
-                        AND CompanyID = {self._getCompanyID(companyName)})
-                        """)
-            roleExists = self._cur.fetchone()[0]
+            roleExists = self.roleExists(roleName,companyName)
 
             if not roleExists:
                 self._cur.execute(f"""
@@ -437,7 +503,7 @@ class _libary():
             self._cur.execute(f"""
                             SELECT EXISTS(
                             SELECT * FROM Role
-                            WHERE RoleID = {self._getRoleID(roleName)}
+                            WHERE RoleID = {self._getRoleID(roleName,companyName)}
                             AND CompanyID = {self._getCompanyID(companyName)})
                             """)
             roleExists = self._cur.fetchone()[0]
@@ -456,7 +522,7 @@ class _libary():
                           SELECT EXISTS(
                           SELECT * FROM UserRole
                           WHERE UserID = {self._getUserID(username)}
-                          AND RoleID = {self._getRoleID(roleName)})
+                          AND RoleID = {self._getRoleID(roleName,companyName)})
                           """)
         userRoleExists =self._cur.fetchone()[0]
 
@@ -465,7 +531,7 @@ class _libary():
                               INSERT INTO UserRole(UserID, RoleID)
                               VALUES(
                               {self._getUserID(username)},
-                              {self._getRoleID(roleName)})
+                              {self._getRoleID(roleName,companyName)})
                               """)
             self._con.commit()
             return True
