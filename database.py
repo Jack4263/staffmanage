@@ -227,7 +227,7 @@ class _libary():
         - Branch Code should be valid
         """
         self._cur.execute(f"""
-                          SELECT EXECUTE(
+                          SELECT EXISTS(
                           SELECT * FROM Branch
                           WHERE BranchCode = '{branchCode}')
                           """)
@@ -613,9 +613,38 @@ class _libary():
         #Turns 2D list from 'fetchall()' into a 1D tuple
         return tuple([branch[0] for branch in self._cur.fetchall()])
         
+    def getEmployees(self,*args) -> tuple: 
+        """
+        Returns a tuple of employee usernames in either a company or branch\n
+        Inputs:
+        - Company : str
+        - Branch : str\n
+        Examples:
+        - Company: getEmployees(company) -> (employees in company)
+        - Branch: getEmployees(company,branch) -> (employees in branch)
+        """
+        noArgs = len(args)
+        #Creates query for company
+        FullQuery = f"""
+                     SELECT Username
+                     FROM User,BranchEmployee,Company,Branch
+                     WHERE Company.CompanyID = Branch.CompanyID
+                     AND Branch.BranchID = BranchEmployee.BranchID
+                     AND BranchEmployee.UserID = User.UserID
+                     AND Company.CompanyName = '{args[0]}'
+                     """
+        
+        if noArgs > 1:
+            query2 = f"""
+                      AND Branch.BranchName = '{args[1]}'
+                      """
+            FullQuery += query2
+        
+        self._cur.execute(FullQuery)
+        return self._cur.fetchall()
 
 dbTools = _libary()
 
 if __name__ == "__main__":
     dbTools = _libary()
-    print(dbTools.getRoles("JTProgramming"))
+    print(dbTools.getEmployees("JTProgramming","Backend"))
