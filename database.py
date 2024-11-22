@@ -613,34 +613,71 @@ class _libary():
         #Turns 2D list from 'fetchall()' into a 1D tuple
         return tuple([branch[0] for branch in self._cur.fetchall()])
         
-    def getEmployees(self,*args) -> tuple: 
+    def getEmployees(self,company:str,branch:str=None) -> list: 
         """
-        Returns a tuple of employee usernames in either a company or branch\n
+        Returns a list of tuples of employee usernames and their branch name within either a company or branch\n
         Inputs:
         - Company : str
         - Branch : str\n
         Examples:
-        - Company: getEmployees(company) -> (employees in company)
-        - Branch: getEmployees(company,branch) -> (employees in branch)
+        - Company: getEmployees(company) -> [(employee username, branch name),...]
+        - Branch: getEmployees(company,branch) -> [(employees username, branch name),...]
         """
-        noArgs = len(args)
-        #Creates query for company
+        #Creates query for company and branch
         query = f"""
-                     SELECT Username
+                     SELECT Username,BranchName
                      FROM User,BranchEmployee,Company,Branch
                      WHERE Company.CompanyID = Branch.CompanyID
                      AND Branch.BranchID = BranchEmployee.BranchID
                      AND BranchEmployee.UserID = User.UserID
-                     AND Company.CompanyName = '{args[0]}'
+                     AND Company.CompanyName = '{company}'
                      """
-        
-        if noArgs > 1:
-            query += f"AND Branch.BranchName = '{args[1]}'"
+        #Adds to query for branch specific
+        if branch:
+            query += f"AND Branch.BranchName = '{branch}'"
         query +="ORDER BY Username ASC"
+
         self._cur.execute(query)
         return self._cur.fetchall()
+
+    def getManagers(self,company:str,branch:str=None) -> list: 
+            """
+            Returns a list of tuples of manager usernames for a company, and their branch name for branch\n
+            Inputs:
+            - Company : str
+            - Branch : str\n
+            Examples:
+            - Company: getManagers(company) -> [(manager username),...]
+            - Branch: getManagers(company,branch) -> [(manager username, branch name),...]
+            """
+            #Creates query for company and branch
+            #Completes 'FROM' and Adds 'WHERE' to query
+            if branch: 
+                query = f"""
+                         SELECT Username,BranchName
+                         FROM User,Company,Branch,BranchManager
+                         WHERE User.UserID = BranchManager.UserID
+                         AND BranchManager.BranchID = Branch.BranchID
+                         AND Branch.BranchName = '{branch}'
+                         """
+            else:
+                query = f"""
+                         SELECT Username
+                         FROM User,Company,CompanyManager
+                         WHERE User.UserID = CompanyManager.UserID
+                         AND CompanyManager.CompanyID = Company.CompanyID
+                         """
+
+            query +=f"""
+                     AND Company.CompanyName = '{company}'
+                     ORDER BY Username ASC
+                     """
+
+            self._cur.execute(query)
+            return self._cur.fetchall()
+
 
 dbTools = _libary()
 
 if __name__ == "__main__":
-    print(dbTools.getEmployees("JTProgramming","Backend"))
+    print(dbTools.getManagers("JTProgramming","Frontend"))
