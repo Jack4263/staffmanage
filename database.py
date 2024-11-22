@@ -571,10 +571,23 @@ class _libary():
             return True
         return False
 
+# PUBLIC GETTERS
+
+    def getUser(self,username:str) -> tuple:
+        """
+        Returns a user's details from the 'User' table as a tuple
+        in the format:\n
+        (Username, FirstName, Surname, Password)
+        """
+
+        self._cur.execute(f"""
+                          SELECT Username,FirstName,Surname,Password
+                          FROM User
+                          WHERE Username = '{username}'
+                          """)
+        return self._cur.fetchone()
 
 dbTools = _libary()
 
 if __name__ == "__main__":
     dbTools = _libary()
-    #comment
-    #This is wrng??
