@@ -587,7 +587,21 @@ class _libary():
                           """)
         return self._cur.fetchone()
 
+    def getBranches(self,company:str) -> tuple: 
+        """
+        Returns a tuple of a companies branches
+        """
+        self._cur.execute(f"""
+                          SELECT BranchName
+                          FROM Company,Branch
+                          WHERE Company.CompanyID = Branch.CompanyID
+                          AND Company.CompanyName = '{company}'
+                          """)
+        #Turns 2D list from 'fetchall()' into a 1D tuple
+        return tuple([branch[0] for branch in self._cur.fetchall()])
+
 dbTools = _libary()
 
 if __name__ == "__main__":
     dbTools = _libary()
+    print(dbTools.getBranches("JTProgramming"))
