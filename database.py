@@ -600,8 +600,22 @@ class _libary():
         #Turns 2D list from 'fetchall()' into a 1D tuple
         return tuple([branch[0] for branch in self._cur.fetchall()])
 
+    def getRoles(self,company:str) -> tuple:
+        """
+        Returns a tuple of the roles in a company 
+        """
+        self._cur.execute(f"""
+                          SELECT RoleName
+                          FROM Company,Role
+                          WHERE Company.CompanyID = Role.CompanyID
+                          AND Company.CompanyName = '{company}'
+                          """)
+        #Turns 2D list from 'fetchall()' into a 1D tuple
+        return tuple([branch[0] for branch in self._cur.fetchall()])
+        
+
 dbTools = _libary()
 
 if __name__ == "__main__":
     dbTools = _libary()
-    print(dbTools.getBranches("JTProgramming"))
+    print(dbTools.getRoles("JTProgramming"))
