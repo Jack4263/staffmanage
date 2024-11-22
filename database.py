@@ -625,7 +625,7 @@ class _libary():
         """
         noArgs = len(args)
         #Creates query for company
-        FullQuery = f"""
+        query = f"""
                      SELECT Username
                      FROM User,BranchEmployee,Company,Branch
                      WHERE Company.CompanyID = Branch.CompanyID
@@ -635,16 +635,12 @@ class _libary():
                      """
         
         if noArgs > 1:
-            query2 = f"""
-                      AND Branch.BranchName = '{args[1]}'
-                      """
-            FullQuery += query2
-        
-        self._cur.execute(FullQuery)
+            query += f"AND Branch.BranchName = '{args[1]}'"
+        query +="ORDER BY Username ASC"
+        self._cur.execute(query)
         return self._cur.fetchall()
 
 dbTools = _libary()
 
 if __name__ == "__main__":
-    dbTools = _libary()
     print(dbTools.getEmployees("JTProgramming","Backend"))
