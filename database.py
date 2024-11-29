@@ -676,8 +676,27 @@ class _libary():
             self._cur.execute(query)
             return self._cur.fetchall()
 
+    def getUserRoleHours(self,username:str,company:str,role:str) -> list: 
+        """
+        Returns a list of tuples containing the day, start, and end time 
+        of a users regular hours for a role in a company\n
+        For Example:
+        - getUserRoleHours() -> [(day1, startTime, endTime),...]
+        """
+        self._cur.execute(f"""
+                           SELECT Day, StartTime, EndTime
+                           FROM UserRoleHours, User, Company, Role
+                           WHERE User.UserID = UserRoleHours.UserID
+                           AND User.Username = '{username}'
+                           AND Role.RoleID = UserRoleHours.RoleID
+                           AND Role.RoleName = '{role}'
+                           AND Role.CompanyID = Company.CompanyID
+                           AND Company.CompanyName = '{company}'
+                           """)
+        return self._cur.fetchall()
+
 
 dbTools = _libary()
 
 if __name__ == "__main__":
-    print(dbTools.getManagers("JTProgramming","Frontend"))
+    print(dbTools.getUserRoleHours("Billy123","JTProgramming","Kitchen Porter"))
