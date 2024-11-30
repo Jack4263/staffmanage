@@ -215,8 +215,6 @@ class _libary():
             """)
         return self._cur.fetchone()[0]
 
-
-
     #PUBLIC SETTERS
     
     def setUser(self,username:str,firstName:str,surname:str,password:str,branchCode:str) -> bool:
@@ -715,8 +713,23 @@ class _libary():
                            """)
         return self._cur.fetchall()
 
+    def getUserHoliday(self,username:str) -> list: 
+        """
+        Returns a list of tuples containing the start and end dates of a users holidays,
+        where all dates are in the format 'yyyy-mm-dd'\n
+        For example:
+        - getUserHoliday(user) -> [(startDate, endDate), (startDate, endDate), ...]
+        """
+        self._cur.execute(f"""
+                          SELECT StartDate, EndDate
+                          FROM UserHoliday, User
+                          WHERE UserHoliday.UserID = User.UserID
+                          AND User.Username = '{username}'
+                          ORDER BY StartDate ASC
+                          """)
+        return self._cur.fetchall()
 
 dbTools = _libary()
 
 if __name__ == "__main__":
-    print(dbTools.getUserRoles("Billy123","JTProgramming"))
+    print(dbTools.getUserHoliday("Billy123"))
