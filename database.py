@@ -587,9 +587,29 @@ class _libary():
                           """)
         return self._cur.fetchone()
 
+    def getUserRoles(self,username:str,company:str) -> tuple: 
+        """
+        Returns a tuple of a users roles within a company\n
+        For example:
+        - getUserRoles(user,company) -> [role1, role2, ...]
+        """
+        self._cur.execute(f"""
+                          SELECT RoleName
+                          FROM Role, User, Company, UserRole
+                          WHERE Role.RoleID = UserRole.RoleID
+                          AND UserRole.UserID = User.UserID
+                          AND User.Username = '{username}'
+                          AND Role.CompanyID = Company.CompanyID
+                          AND Company.CompanyName = '{company}'
+                          """)
+        #Turns 2D list from 'fetchall()' into a 1D tuple
+        return tuple([role[0] for role in self._cur.fetchall()])
+
     def getBranches(self,company:str) -> tuple: 
         """
         Returns a tuple of a companies branches
+        For example:
+        - getBranches(company) -> [branch1, branch2, ...]
         """
         self._cur.execute(f"""
                           SELECT BranchName
@@ -699,4 +719,4 @@ class _libary():
 dbTools = _libary()
 
 if __name__ == "__main__":
-    print(dbTools.getUserRoleHours("Billy123","JTProgramming","Kitchen Porter"))
+    print(dbTools.getUserRoles("Billy123","JTProgramming"))
