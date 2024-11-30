@@ -1,6 +1,6 @@
 import sqlite3 as sql
 
-class _libary():
+class _library():
     def __init__(self):
         """
         - Creates the database if tables don't exists
@@ -569,6 +569,60 @@ class _libary():
             return True
         return False
 
+    def addShift(self,branch:str,role:str,day:str,startTime:str,endTime:str) -> bool: #UNTESTED
+        """
+        Will add a shift for a branch to the shift table\n
+        Will return True if insert was successful, otherwise False
+        - Shift shouldn't already exist
+        - Branch should exist
+        - Role should exist
+        - Day should be valid
+        - Times should be valid, in the format 'yyyy-mm-dd' (ISO8601 Format)
+        """
+        self._cur.execute(f"""
+                          SELECT EXISTS(
+                          SELECT * FROM Branch
+                          WHERE BranchName = '{branch}')
+                          """)
+        branchExists = self._cur.fetchone()[0]
+        if not branchExists: return False
+
+        self._cur.execute(f"""
+                          SELECT EXISTS(
+                          SELECT * FROM Role,Branch
+                          WHERE Role.RoleName = '{role}'
+                          AND Role.CompanyID = Branch.CompanyID
+                          AND Branch.BranchName = '{branch}')
+                          """)
+        roleExists = self._cur.fetchone()[0]
+        if not roleExists: return False
+
+        if day not in self._days: return False
+
+        if self._validTime(startTime) and self._validTime(endTime):
+            self._cur.execute(f"""
+                              SELECT RoleID
+                              FROM Role, Branch
+                              WHERE Role.RoleName = '{role}'
+                              AND Role.BranchID = Branch.BranchID
+                              AND Branch.BranchName = '{branch}'
+                              """)
+            roleID = self._cur.fetchone()[0]
+
+            self._cur.execute(f"""
+                              SELECT BranchID
+                              FROM Branch
+                              WHERE BranchName = '{branch}'
+                              """)
+            branchID = self._cur.fetchone()[0]
+            
+            self._cur.execute(f"""
+                              INSERT INTO Shift(BranchID, RoleID, Day, StartTime, EndTime)
+                              VALUES({branchID},{roleID},'{day}','{startTime}','{endTime}')
+                              """)
+            self._con.commit()
+
+
 # PUBLIC GETTERS
 
     def getUser(self,username:str) -> tuple:
@@ -746,7 +800,7 @@ class _libary():
                           """)
         return self._cur.fetchall()
 
-dbTools = _libary()
+dbTools = _library()
 
 if __name__ == "__main__":
     print(dbTools.getShifts("Backend","Programmer"))
