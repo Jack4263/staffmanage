@@ -729,7 +729,24 @@ class _libary():
                           """)
         return self._cur.fetchall()
 
+    def getShifts(self,branch:str,role:str) -> list: #UNTESTED
+        """
+        Returns a list of tuples containing the day, start, and end time of the shifts for a role within a branch\n
+        For example:
+        - getShifts(branch,role) -> [(day, startTime, endTime), (day, startTime, endTime), ...]
+        """
+        self._cur.execute(f"""
+                          SELECT Day, StartTime, EndTime
+                          FROM Shift, Role, Branch
+                          WHERE Shift.BranchID = Branch.BranchID
+                          AND Branch.BranchName = '{branch}'
+                          AND Branch.CompanyID = Role.CompanyID
+                          AND Role.RoleName = '{role}'
+                          AND Role.RoleID = Shift.RoleID
+                          """)
+        return self._cur.fetchall()
+
 dbTools = _libary()
 
 if __name__ == "__main__":
-    print(dbTools.getUserHoliday("Billy123"))
+    print(dbTools.getShifts("Backend","Programmer"))
