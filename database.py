@@ -125,16 +125,18 @@ class _library():
             return self._cur.fetchone()[0]
         except: return False
 
-    def _getBranchID(self,branchName:str=None,branchCode:str=None) -> int:
+    def _getBranchID(self,companyName:str=None,branchName:str=None,branchCode:str=None) -> int:
         """
-        branchName : str -> Returns BranchID from Branch Name\n
-        branchCode : str -> Returns BranchID from Branch Code
+        _getBranchID(companyName, branchName) -> Returns BranchID from Branch Name and Company Name\n
+        _getBranchID(branchCode) -> Returns BranchID from Branch Code
         """
         try:
             if branchName:
                 self._cur.execute(f"""
-                            SELECT BranchID FROM Branch
-                            WHERE BranchName = '{branchName}'
+                            SELECT BranchID FROM Branch, Company
+                            WHERE Branch.BranchName = '{branchName}'
+                            AND Branch.CompanyID = Company.CompanyID
+                            AND Company.CompanyName = '{companyName}'
                                 """)
                 return self._cur.fetchone()[0]
             
@@ -321,7 +323,7 @@ class _library():
         self._cur.execute(f"""
                           SELECT EXISTS(
                           SELECT * FROM UserRoleHours
-                          WHERE Day = '{day}'
+                          WHERE Day = '{day.capitalize()}'
                           AND UserID = {userID}
                           AND RoleID = {roleID})
                           """)
@@ -467,7 +469,7 @@ class _library():
             self._cur.execute(f"""
                             SELECT EXISTS(
                             SELECT * FROM BranchManager
-                            WHERE BranchID = {self._getBranchID(branchName=branchName)}
+                            WHERE BranchID = {self._getBranchID(companyName=companyName,branchName=branchName)}
                             AND UserID = {self._getUserID(username)})
                             """)
             employed = self._cur.fetchone()[0]
@@ -476,7 +478,7 @@ class _library():
             self._cur.execute(f"""
                               INSERT INTO BranchManager(BranchID,UserID)
                               VALUES(
-                                    {self._getBranchID(branchName)},
+                                    {self._getBranchID(companyName,branchName)},
                                     {self._getUserID(username)})
                               """)
             self._con.commit()
@@ -569,58 +571,44 @@ class _library():
             return True
         return False
 
-    def addShift(self,branch:str,role:str,day:str,startTime:str,endTime:str) -> bool: #UNTESTED
+    def addShift(self,company:str,branch:str,role:str,day:str,startTime:str,endTime:str) -> bool: 
         """
         Will add a shift for a branch to the shift table\n
         Will return True if insert was successful, otherwise False
         - Shift shouldn't already exist
+        - Company should exist
         - Branch should exist
         - Role should exist
         - Day should be valid
-        - Times should be valid, in the format 'yyyy-mm-dd' (ISO8601 Format)
+        - Times should be valid, in the format HH:MM
         """
+        if not self.companyExists(company): return False
+        if not self.branchExists(company, branch): return False
+        if not self.roleExists(role, company): return False
+        if day.lower() not in self._days: return False
         self._cur.execute(f"""
-                          SELECT EXISTS(
-                          SELECT * FROM Branch
-                          WHERE BranchName = '{branch}')
-                          """)
-        branchExists = self._cur.fetchone()[0]
-        if not branchExists: return False
-
-        self._cur.execute(f"""
-                          SELECT EXISTS(
-                          SELECT * FROM Role,Branch
-                          WHERE Role.RoleName = '{role}'
-                          AND Role.CompanyID = Branch.CompanyID
-                          AND Branch.BranchName = '{branch}')
-                          """)
-        roleExists = self._cur.fetchone()[0]
-        if not roleExists: return False
-
-        if day not in self._days: return False
-
+                           SELECT EXISTS(
+                           SELECT * FROM Shift
+                           WHERE BranchID = {self._getBranchID(company,branch)}
+                           AND RoleID = {self._getRoleID(role,company)}
+                           AND Day = '{day.capitalize()}'
+                           AND StartTime = '{startTime}'
+                           AND EndTime = '{endTime}')
+                           """)
+        shiftExists = self._cur.fetchone()[0]
+        if shiftExists: return False
         if self._validTime(startTime) and self._validTime(endTime):
             self._cur.execute(f"""
-                              SELECT RoleID
-                              FROM Role, Branch
-                              WHERE Role.RoleName = '{role}'
-                              AND Role.BranchID = Branch.BranchID
-                              AND Branch.BranchName = '{branch}'
-                              """)
-            roleID = self._cur.fetchone()[0]
-
-            self._cur.execute(f"""
-                              SELECT BranchID
-                              FROM Branch
-                              WHERE BranchName = '{branch}'
-                              """)
-            branchID = self._cur.fetchone()[0]
-            
-            self._cur.execute(f"""
                               INSERT INTO Shift(BranchID, RoleID, Day, StartTime, EndTime)
-                              VALUES({branchID},{roleID},'{day}','{startTime}','{endTime}')
+                              VALUES({self._getBranchID(company,branch)},
+                              {self._getRoleID(role,company)},
+                              '{day.capitalize()}',
+                              '{startTime}',
+                              '{endTime}')
                               """)
             self._con.commit()
+            return True
+        return False
 
 
 # PUBLIC GETTERS
@@ -783,7 +771,7 @@ class _library():
                           """)
         return self._cur.fetchall()
 
-    def getShifts(self,branch:str,role:str) -> list: #UNTESTED
+    def getShifts(self,comany:str,branch:str,role:str) -> list: 
         """
         Returns a list of tuples containing the day, start, and end time of the shifts for a role within a branch\n
         For example:
@@ -791,10 +779,12 @@ class _library():
         """
         self._cur.execute(f"""
                           SELECT Day, StartTime, EndTime
-                          FROM Shift, Role, Branch
+                          FROM Shift, Role, Branch, Company
                           WHERE Shift.BranchID = Branch.BranchID
                           AND Branch.BranchName = '{branch}'
-                          AND Branch.CompanyID = Role.CompanyID
+                          AND Branch.CompanyID = Company.CompanyID
+                          AND Company.CompanyName = '{comany}'
+                          AND Company.CompanyID = Role.CompanyID
                           AND Role.RoleName = '{role}'
                           AND Role.RoleID = Shift.RoleID
                           """)
@@ -803,4 +793,5 @@ class _library():
 dbTools = _library()
 
 if __name__ == "__main__":
-    print(dbTools.getShifts("Backend","Programmer"))
+    print(dbTools.getShifts("JTProgramming","Backend","Programmer"))
+    pass
