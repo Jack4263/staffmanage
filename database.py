@@ -295,7 +295,7 @@ class _library():
             return True
         return False  
 
-    def setUserRoleHours(self,companyName:str,roleName:str,userName:str,day:str,startTime:str,endTime:str) -> bool: #UNTESTED
+    def setUserRoleHours(self,companyName:str,roleName:str,userName:str,day:str,startTime:str,endTime:str) -> bool: 
         """
         Will add a new day and time to UserRoleHours. If day already exists for a user then it will be updated\n
         Will return True if insert was successful, otherwise False

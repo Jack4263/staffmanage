@@ -14,28 +14,52 @@ def classes():
     return render_template("signupform.html")
 
 
-# USER CLASSES
+# ~~~~~~~~~~~~~~~~~~~~~ ACCESS CLASSES ~~~~~~~~~~~~~~~~~~~~~
 
-class employee():
-    pass
 
-class branchManager(employee):
-    pass
+class Company():
+    """
+    """
+    def __init__(self, companyName:str):
+        pass
 
-class companyManager(branchManager):
-    pass
+class Branch():
+    """
+    """
+    def __init__(self, company:Company, branchName:str):
+        pass
 
-# ACCESS CLASSES
+class Role():
+    """
+    """
+    def __init__(self, company:Company, roleName:str):
+        pass
+    
+class Rota():
+    """
+    """
+    def __init__(self):
+        pass
 
-class company():
-    pass
 
-class branch():
-    pass
+# ~~~~~~~~~~~~~~~~~~~~~ USER CLASSES ~~~~~~~~~~~~~~~~~~~~~
 
-class role():
-    pass
 
-class rota():
-    pass
+class Employee():
+    """
+    """
+    def __init__(self, username:str, company:Company, branch:Branch):
+        pass
+
+class BranchManager(Employee):
+    """
+    """
+    def __init__(self, username:str, company:Company, branch:Branch):
+        super().__init__(username, company, branch)
+
+class CompanyManager(BranchManager):
+    """
+    """
+    def __init__(self, username:str, company:Company, branch:Branch):
+        super().__init__(username, company, branch)
 
