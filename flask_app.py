@@ -19,9 +19,21 @@ def classes():
 
 class Company():
     """
+    Creates a company object containing the company name and a list of its branches as branch objects
     """
     def __init__(self, companyName:str):
-        pass
+        self._name = companyName
+        self._branches = [Branch(companyName, branch) for branch in db.getBranches(companyName)]
+
+    def getName(self) -> str:
+        return self._name
+
+    def getBranches(self) -> list:
+        return self._branches
+
+    def addBranch(self, newBranch):
+        self._branches.append(Branch(self._name, newBranch))
+        db.setBranch(self._name, newBranch, self._branches[-1].getCode())
 
 class Branch():
     """
