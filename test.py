@@ -1,15 +1,9 @@
-args = ["companyName","branchName"]
-noArgs = len(args)
+from datetime import date
 
-FullQuery = f"""
-          SELECT Username
-          FROM {','.join(['Company','Branch',''][:noArgs])}
-          WHERE Company.CompanyName = '{args[0]}'
-          """
-query2 = f"""
-          AND Company.CompanyID = Branch.BranchID
-          AND Branch.BranchName = '{args[1]}'
-          """
+d = str(date.today())
+# print(d[2:4],end=" ")
+# print(d[5:7],end=" ")
+# print(d[8: ])
 
-FullQuery +=  query2
-print(FullQuery)
+print(d)
+print(''.join(d.split('-'))[2:])
