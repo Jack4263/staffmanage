@@ -31,7 +31,11 @@ class Company():
     def getBranches(self) -> list:
         return self._branches
 
-    def addBranch(self, newBranch):
+    def addBranch(self, newBranch) -> None:
+        """
+        - Adds a branch to the companies list of branch objects
+        - Adds a new branch to the database
+        """
         self._branches.append(Branch(self._name, newBranch))
         db.setBranch(self._name, newBranch, self._branches[-1].getCode())
 
