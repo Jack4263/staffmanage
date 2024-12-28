@@ -24,7 +24,7 @@ class Company(): #UNTESTED
     Creates a company object containing the company name and a list of its branches as branch objects.
     If the company doesn't exist then it is added to the database
     """
-    def __init__(self, companyName:str):
+    def __init__(self, companyName:str):  #UNTESTED
         self._name = companyName
 
         # Adds company to database is doesn't exist
@@ -36,24 +36,27 @@ class Company(): #UNTESTED
 
         self._branches = [Branch(self, branch) for branch in db.getBranches(companyName)]
 
-    def getName(self) -> str:
+    def getName(self) -> str:  #UNTESTED
         return self._name
 
-    def getBranches(self) -> list:
+    def getBranches(self) -> list:  #UNTESTED
         return self._branches
 
-    def addBranch(self, newBranch) -> None:
+    def addBranch(self, newBranch) -> None: #UNTESTED
         """
         - Adds a branch to the companies list of branch objects
         - Adds a new branch to the database
         """
-        self._branches.append(Branch(self, newBranch))
+        try:
+            self._branches.append(Branch(self, newBranch))
+        except Exception as error:
+            raise error
 
 class Branch(): #UNTESTED
     """
     Creates a branch object and adds a branch to the database if branch doesn't exist
     """
-    def __init__(self, company:Company, branchName:str):
+    def __init__(self, company:Company, branchName:str): #UNTESTED
         self._company = company
         self._name = branchName
         
@@ -72,7 +75,7 @@ class Branch(): #UNTESTED
                 raise Exception("Company branch already exists")
 
 
-    def generateCode(self, end:int) -> str:
+    def generateCode(self, end:int) -> str:  #UNTESTED
         """
         Returns a random code generated from the company and branch names
         """
@@ -86,10 +89,10 @@ class Branch(): #UNTESTED
 
         return code.upper()
     
-    def getCompany(self) -> Company:
+    def getCompany(self) -> Company: #UNTESTED
         return self._company
     
-    def getName(self) -> str:
+    def getName(self) -> str: #UNTESTED
         return self._name
 
 class Role():
