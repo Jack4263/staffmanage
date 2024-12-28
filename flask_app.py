@@ -34,7 +34,11 @@ class Company(): #UNTESTED
         if not validCompany:
             raise Exception("Company name already taken")
 
-        self._branches = [Branch(self, branch) for branch in db.getBranches(companyName)]
+                    # Creates a list of branch objects
+        self._branches = []
+        for branch in db.getBranches(companyName):
+            try: self._branches.append(Branch(self, branch)) # Only creates valid branches
+            except Exception: pass
 
     def getName(self) -> str:  #UNTESTED
         return self._name
