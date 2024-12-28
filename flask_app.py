@@ -44,6 +44,9 @@ class Company(): #UNTESTED
         return self._name
 
     def getBranches(self) -> list:  #UNTESTED
+        """
+        Returns list of child Branch objects
+        """
         return self._branches
 
     def addBranch(self, newBranch) -> None: #UNTESTED
@@ -94,21 +97,41 @@ class Branch(): #UNTESTED
         return code.upper()
     
     def getCompany(self) -> Company: #UNTESTED
+        """
+        Returns parent company object
+        """
         return self._company
     
     def getName(self) -> str: #UNTESTED
         return self._name
 
-class Role():
+class Role(): #UNTESTED
     """
     """
-    def __init__(self, company:Company, roleName:str):
-        pass
+    def __init__(self, company:Company, roleName:str): #UNTESTED
+        self._company = company
+        self._name = roleName
+
+        # Create a list of Employee objects of employees within the role
+        self._employees = []
+        # ...
+
+    def getCompany(self) -> Company: #UNTESTED
+        """
+        Returns parent Company object
+        """
+        return self._company
     
-class Rota():
+    def getName(self):
+        return self._name
+
+
+
+    
+class Rota(): #UNTESTED
     """
     """
-    def __init__(self):
+    def __init__(self): #UNTESTED
         pass
 
 
